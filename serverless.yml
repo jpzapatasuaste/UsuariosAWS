@@ -1,0 +1,174 @@
+service: Blu-Usuarios
+plugins:
+  - serverless-plugin-include-dependencies
+  - serverless-pseudo-parameters
+
+package:
+  individually: true
+  exclude:
+    - ./**
+
+custom:
+  settings:
+    REGION_AWS: us-east-1
+    LENGUAGE: es-ES
+    TIME_ZONE: America/Mexico_City
+    TABLA_USUARIOS: Usuarios
+  # customDomain:
+  #   domainName: ${param:domainName}
+  #   basePath: 'usuarios'
+  #   createRoute53Record: true
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  environment: ${self:custom.settings}
+  versionFunctions: false
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:custom.settings.TABLA_USUARIOS}"
+        - Effect: Allow
+          Action: apigateway:*
+          Resource: '*'
+  apiName: ${self:service}
+
+functions:
+  #Client Schema
+  crearUsuario:
+    handler: src/controladores/Blu-Usuarios-Crear.ejecutar
+    name: Blu-Usuarios-Crear
+    description: Función lambda para crear usuarios
+    events:
+      - http:
+          path: usuarios
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - token
+              - key
+              - user
+          authorizer:
+            arn: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:Blu-Autorizador-Token
+            identitySource: method.request.header.token, method.request.header.key
+            type: request
+            resultTtlInSeconds: 0
+      
+  actualizarUsuario:
+    handler: src/controladores/Blu-Usuarios-Actualizar.ejecutar
+    name: Blu-Usuarios-Actualizar
+    description: Función lambda para actualizar un usuario
+    events:
+      - http:
+          path: usuarios/{id}
+          method: put
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - token
+              - key
+              - user
+          authorizer:
+            arn: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:Blu-Autorizador-Token
+            identitySource: method.request.header.token, method.request.header.key
+            type: request
+            resultTtlInSeconds: 0
+
+  consultarUsuarios:
+    handler: src/controladores/Blu-Usuarios-Consultar-Por-Id.ejecutar
+    name: Blu-Usuarios-Consultar-Por-Id
+    description: Función lambda para consultar usuarios
+    events:
+      - http:
+          path: usuarios/{id}
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - token
+              - key
+              - user
+          authorizer:
+            arn: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:Blu-Autorizador-Token
+            identitySource: method.request.header.token, method.request.header.key
+            type: request
+            resultTtlInSeconds: 0    
+    
+  eliminarUsuario:
+    handler: src/controladores/Blu-Usuarios-Eliminar.ejecutar
+    name: Blu-Usuarios-Eliminar
+    description: Función lambda para eliminar un usuario
+    events:
+      - http:
+          path: usuarios/{id}
+          method: delete
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - token
+              - key
+              - user
+          authorizer:
+            arn: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:Blu-Autorizador-Token
+            identitySource: method.request.header.token, method.request.header.key
+            type: request
+            resultTtlInSeconds: 0
+
+resources:
+  Resources:
+    GatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: UNAUTHORIZED
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        StatusCode: '401'
+    Table:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Usuarios
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
