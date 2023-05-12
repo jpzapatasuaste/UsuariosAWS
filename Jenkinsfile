@@ -1,11 +1,14 @@
 pipeline{
     agent any
     stages{
-        stage{
-            steps('install'){
+        stage('install'){
+            steps{
                 bat 'npm install -f'
             }
-             steps('deploy'){
+
+        }
+        stage('deploy'){
+            steps('deploy'){
                 bat 'sls deploy'
             }
 
