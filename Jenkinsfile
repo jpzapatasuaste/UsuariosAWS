@@ -9,7 +9,7 @@ pipeline{
         }
         stage('deploy'){
             steps('deploy'){
-                bat 'sls deploy'
+                bat 'serverless -version'
             }
 
         }
