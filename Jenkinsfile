@@ -3,14 +3,13 @@ pipeline{
     stages{
         stage('install'){
             steps{
-                bat 'npm install -f'
-                bat 'serverless plugin install -n serverless-plugin-include-dependencies'
+                sh 'npm install -f'
             }
 
         }
         stage('deploy'){
             steps('deploy'){
-                bat 'serverless -version'
+                sh 'serverless -version'
             }
 
         }
