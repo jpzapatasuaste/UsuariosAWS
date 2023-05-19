@@ -4,7 +4,7 @@ pipeline{
         stage('install'){
             steps{
                 bat 'npm install -f'
-                bat 'npm install serverless -g'
+                bat 'serverless plugin install -n serverless-plugin-include-dependencies'
             }
 
         }
