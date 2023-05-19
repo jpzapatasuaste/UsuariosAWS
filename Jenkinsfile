@@ -3,13 +3,13 @@ pipeline{
     stages{
         stage('install'){
             steps{
-                sh 'npm install -f'
+                bat 'npm install -f'
             }
 
         }
         stage('deploy'){
             steps('deploy'){
-                sh 'serverless -version'
+                bat 'serverless -version'
             }
 
         }
