@@ -9,7 +9,7 @@ pipeline{
 
         }
         stage('deploy'){
-            steps('deploy'){
+            steps{
                 bat 'serverless -version'
             }
 
